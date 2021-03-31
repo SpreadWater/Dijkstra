@@ -9,4 +9,8 @@
 D:/cProjects/main.c
 stdio.h
 -
+string.h
+-
+stdlib.h
+-
 
