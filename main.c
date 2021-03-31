@@ -22,7 +22,7 @@ Node dijkstra(int source, int destination);//定义最短路径算法
 
 void initData();//初始化操作
 
-void collectNode(Node node, char *path,PATHLINKLIST *paths);//收集每条最短路径
+void collectNode(Node node, char *path, PATHLINKLIST *paths);//收集每条最短路径
 
 void IdName(int id);//ID转名字输出
 
@@ -30,7 +30,7 @@ void printLoad(char *path);//打印单条路径
 
 int isEnd(Node node);//判断是否是最后一个节点,返回1表示不是最后一个节点，返回0表示是最后一个节点
 
-char *addPath(char *path,char point);//由于C语言的字符拼接不是返回一个新的地址，所以需要自己实现JAVA的字符串“+”操作
+char *addPath(char *path, char point);//由于C语言的字符拼接不是返回一个新的地址，所以需要自己实现JAVA的字符串“+”操作
 
 
 /*
@@ -48,8 +48,8 @@ int source, destination;
 
 int main() {
     //初始化
-    PATHLINKLIST *paths=(PATHLINKLIST *)malloc(sizeof(PATHLINKLIST));
-    paths->next=NULL;
+    PATHLINKLIST *paths = (PATHLINKLIST *) malloc(sizeof(PATHLINKLIST));
+    paths->next = NULL;
     initData();
     //最短路径算法计算
     Node result = dijkstra(source - 1, destination - 1);
@@ -57,11 +57,11 @@ int main() {
     printf("The Shortest path length:%d\n", result.length);
     printf("The Shortest path:\n");
     //输出最短路径
-    collectNode(result, path,paths);
-    paths=paths->next;
-    while (paths!=NULL){
+    collectNode(result, path, paths);
+    paths = paths->next;
+    while (paths != NULL) {
         printLoad(paths->path);
-        paths=paths->next;
+        paths = paths->next;
     }
     return 0;
 }
@@ -72,11 +72,32 @@ void initData() {
      */
     //开始时，设置每一个点都不可达
     int i, j;
+    int cityId, targetCityId, length;
+    int temp = INF;
+    FILE *fp;
     for (i = 0; i < SIZE; ++i) {
         for (j = 0; j < SIZE; ++j) {
             dataSource[i][j] = INF;
         }
     }
+    if ((fp = fopen("D://seconddata//data2.txt", "r")) == NULL) {
+        printf("打开文件失败!");
+        exit(0);
+    } else {
+//        printf("打开文件成功");
+        while (fscanf(fp, "%d %d %d", &cityId, &targetCityId, &length) != EOF) {
+            dataSource[cityId - 1][targetCityId - 1] = length;
+        }
+        fclose(fp);
+    }
+    for (i = 0; i < SIZE; ++i) {
+        for (j = 0; j < SIZE; ++j) {
+            if (dataSource[i][j] == temp)
+                dataSource[i][j] = dataSource[j][i];
+        }
+        nodes[i].ID = i + 1;
+    }
+
     printf("-----Welcome to The Dijkstra Test--------\n");
     while (1) {
         printf("Please input the source of the city\n");
@@ -89,50 +110,16 @@ void initData() {
             break;
         }
     }
-    path[0]=destination+'0';
-//    dataSource[0][1] = 24;    //测试数据
-//    dataSource[0][2] = 47;
-//    dataSource[0][5] = 70;
-//    dataSource[1][2] = 25;
-//    dataSource[1][4] = 120;
-//    dataSource[2][3] = 23;
-//    dataSource[2][4] = 88;
-//    dataSource[2][5] = 66;
-//    dataSource[3][5] = 31;
-//    dataSource[3][6] = 42;
-//    dataSource[4][5] = 31;
-//    dataSource[4][7] = 29;
-//    dataSource[5][6] = 74;
-//    dataSource[5][7] = 79;
-//    dataSource[6][7] = 66;
-
-
+    path[0] = destination + '0';
 // 测试多路径情况
-    dataSource[0][1] = 2;
-    dataSource[0][2] = 3;
-    dataSource[1][3] = 3;
-    dataSource[2][3] = 2;
-    dataSource[3][4] = 2;
-    dataSource[3][5] = 3;
-    dataSource[4][6] = 3;
-    dataSource[5][6] = 2;
-
-
-    nodes[0].ID = 1;
-    nodes[1].ID = 2;
-    nodes[2].ID = 3;
-    nodes[3].ID = 4;
-    nodes[4].ID = 5;
-    nodes[5].ID = 6;
-    nodes[6].ID = 7;
-    nodes[7].ID = 8;
-    int temp = INF;
-    for (i = 0; i < SIZE; ++i) {
-        for (j = 0; j < SIZE; ++j) {
-            if (dataSource[i][j] == temp)
-                dataSource[i][j] = dataSource[j][i];
-        }
-    }
+//    dataSource[0][1] = 2;
+//    dataSource[0][2] = 3;
+//    dataSource[1][3] = 3;
+//    dataSource[2][3] = 2;
+//    dataSource[3][4] = 2;
+//    dataSource[3][5] = 3;
+//    dataSource[4][6] = 3;
+//    dataSource[5][6] = 2;
 }
 
 /*
@@ -202,13 +189,14 @@ Node dijkstra(int source, int destination) {
     }
     return nodes[destination];
 }
+
 //打印单条路径
-void printLoad(char *path){
-    int length=strlen(path);
-    for (int i = length-1; i >=0; i--) {
-        printf("%c",path[i]);
+void printLoad(char *path) {
+    int length = strlen(path);
+    for (int i = length - 1; i >= 0; i--) {
+        printf("节点%c", path[i]);
 //        IdName(path[i]-'0');
-        if (i!=0){
+        if (i != 0) {
             printf("---->");
         }
     }
@@ -256,46 +244,47 @@ int isEnd(Node node) {
     return result;
 }
 
-char *addPath(char *path,char point){
+char *addPath(char *path, char point) {
 
-    int before=strlen(path);
+    int before = strlen(path);
 
-    char *newpath=(char *)malloc(before+2);//给最后一个地方添加结束标识符
+    char *newpath = (char *) malloc(before + 2);//给最后一个地方添加结束标识符
 
-    for (int i = 0; i <before+2 ; ++i) {
-        if (i<=before-1){
-            newpath[i]=path[i];
+    for (int i = 0; i < before + 2; ++i) {
+        if (i <= before - 1) {
+            newpath[i] = path[i];
         }
-        if (before-1<i&&i<=before){
-            newpath[i]=point;
+        if (before - 1 < i && i <= before) {
+            newpath[i] = point;
         }
-        if (i==before+1){
-            newpath[i]='\0';
+        if (i == before + 1) {
+            newpath[i] = '\0';
         }
     }
     return newpath;
 }
-void collectNode(Node node, char *path,PATHLINKLIST *paths) {
+
+void collectNode(Node node, char *path, PATHLINKLIST *paths) {
     for (int i = 0; i < SIZE; ++i) {
         if (!isEnd(node)) {
             //pathLink的拼接
-            PATHLINKLIST *temp=(PATHLINKLIST *)malloc(sizeof(PATHLINKLIST));
-            temp->next=NULL;
-            temp->path=path;
+            PATHLINKLIST *temp = (PATHLINKLIST *) malloc(sizeof(PATHLINKLIST));
+            temp->next = NULL;
+            temp->path = path;
             //多条路径的连接
-            while (paths!=NULL){
-                if (paths->next==NULL){
-                    paths->next=temp;
-                    paths=paths->next;
+            while (paths != NULL) {
+                if (paths->next == NULL) {
+                    paths->next = temp;
+                    paths = paths->next;
                 }
-                paths=paths->next;
+                paths = paths->next;
             }
         }
         if (node.preNode[i] == NULL) {
             return;
         } else {
             //单个节点的拼接，中序遍历保存路径的方法去遍历所有路径
-            collectNode(*node.preNode[i], addPath(path,node.preNode[i]->ID + '0'),paths);
+            collectNode(*node.preNode[i], addPath(path, node.preNode[i]->ID + '0'), paths);
         }
     }
 }
